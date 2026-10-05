@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Discovery of Uranus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030611;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-glow: rgba(78, 242, 210, 0.2);
+      --accent: #4ef2d2;
+      --accent-cyan: #38bdf8;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.5;
+      padding-bottom: calc(85px + env(safe-area-inset-bottom));
+    }
+
+    /* Фоновые светящиеся круги (Liquid glow) */
+    .glow-blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+    .blob-1 {
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, #38bdf8, transparent 70%);
+    }
+    .blob-2 {
+      top: 40%;
+      right: -80px;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, #4ef2d2, transparent 70%);
+    }
+
+    /* Верхняя панель */
+    header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      padding: max(1rem, env(safe-area-inset-top)) 1.25rem 1rem;
+      background: rgba(3, 6, 17, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+    }
+    .brand span {
+      color: var(--accent);
+    }
+    .author-badge {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: var(--glass-bg);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+    }
+
+    /* Главный блок Hero */
+    .hero {
+      position: relative;
+      z-index: 1;
+      padding: 1.5rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(78, 242, 210, 0.1);
+      border: 1px solid rgba(78, 242, 210, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.1rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, #fff, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 480px;
+    }
+
+    /* 3D Окно */
+    .canvas-wrap {
+      width: 100%;
+      height: 320px;
+      margin: 1.5rem 0;
+      position: relative;
+      touch-action: none;
+    }
+
+    #space-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .touch-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: rgba(3, 6, 17, 0.65);
+      border: 1px solid var(--glass-border);
+      padding: 4px 12px;
+      border-radius: 12px;
+      pointer-events: none;
+    }
+
+    /* Карточки из "жидкого стекла" */
+    .section {
+      position: relative;
+      z-index: 1;
+      padding: 1.5rem 1.25rem;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .glass-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #fff;
+    }
+
+    .glass-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Калькулятор веса */
+    .calc-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      color: #fff;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--accent);
+    }
+
+    .result-text {
+      font-size: 1rem;
+      color: #fff;
+      font-weight: 600;
+    }
+    .result-val {
+      color: var(--accent);
+      font-size: 1.3rem;
+    }
+
+    /* Нижняя стеклянная навигация */
+    .bottom-nav {
+      position: fixed;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 2rem);
+      max-width: 420px;
+      background: rgba(14, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid var(--glass-border);
+      border-radius: 30px;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.65rem 0.5rem;
+      z-index: 100;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .nav-btn {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+  <div class="glow-blob blob-1"></div>
+  <div class="glow-blob blob-2"></div>
+
+  <header>
+    <div class="brand">URANUS <span>1781</span></div>
+    <div class="author-badge">William Herschel</div>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="badge">March 13, 1781</div>
+      <h1>A New World in the <span>Night Sky</span></h1>
+      <p>
+        In 1781, a music teacher looked into his homemade telescope and found a new giant planet. It was the first planet found in modern history.
+      </p>
+
+      <div class="canvas-wrap">
+        <canvas id="space-canvas"></canvas>
+        <div class="touch-hint">Drag to spin the planet</div>
+      </div>
+    </section>
+
+    <section class="section" id="facts">
+      <h2>Cool Facts</h2>
+
+      <div class="glass-card">
+        <h3><span>🌀</span> It rolls like a ball</h3>
+        <p>Most planets spin like a top. Uranus spins on its side! Because of this, night and day at its poles can last 42 years.</p>
+      </div>
+
+      <div class="glass-card">
+        <h3><span>❄️</span> Extremely cold</h3>
+        <p>Uranus is an Ice Giant. Its atmosphere is made of hydrogen, helium, and methane ice. Temperatures drop to -224 °C.</p>
+      </div>
+
+      <div class="glass-card">
+        <h3><span>🔭</span> A lucky accident</h3>
+        <p>Herschel first thought he found a comet. Later, scientists calculated its path and proved it was a massive planet far behind Saturn.</p>
+      </div>
+    </section>
+
+    <section class="section" id="calculator">
+      <h2>Your Weight on Uranus</h2>
+      <div class="glass-card">
+        <p style="margin-bottom: 0.75rem;">Gravity on Uranus is a bit weaker than on Earth (about 89%). Enter your weight to check:</p>
+        <div class="calc-box">
+          <div class="input-row">
+            <input type="number" id="weightInput" placeholder="Enter weight in kg" value="60">
+          </div>
+          <div class="result-text">
+            On Uranus you weigh: <span class="result-val" id="weightResult">53.4</span> kg
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="story">
+      <h2>How it Happened</h2>
+      <div class="glass-card">
+        <h3>1. The Music Teacher</h3>
+        <p>William Herschel was a musician who loved the night sky. Because good telescopes were expensive, he learned how to melt metal and polish mirrors by hand.</p>
+      </div>
+      <div class="glass-card">
+        <h3>2. The Discovery Night</h3>
+        <p>In his small garden in England, he noticed a faint blue object. It moved across the sky night after night, unlike the fixed stars.</p>
+      </div>
+      <div class="glass-card">
+        <h3>3. Doubling the System</h3>
+        <p>This discovery doubled the known size of our Solar System and made Herschel famous all over the world.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="#home" class="nav-btn active">Planet</a>
+    <a href="#facts" class="nav-btn">Facts</a>
+    <a href="#calculator" class="nav-btn">Weight</a>
+    <a href="#story" class="nav-btn">Story</a>
+  </nav>
+
+  <script>
+    // --- 1. Three.js: Модель Урана ---
+    const wrap = document.querySelector('.canvas-wrap');
+    const canvas = document.getElementById('space-canvas');
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+    camera.position.z = 4.2;
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Уран вращается на боку (угол 98 градусов)
+    const uranusGroup = new THREE.Group();
+    uranusGroup.rotation.z = THREE.MathUtils.degToRad(98);
+    scene.add(uranusGroup);
+
+    // Сама планета
+    const sphereGeo = new THREE.SphereGeometry(1.2, 32, 32);
+    const sphereMat = new THREE.MeshStandardMaterial({
+      color: 0x62e6e1,
+      roughness: 0.6,
+      metalness: 0.1
+    });
+    const uranusMesh = new THREE.Mesh(sphereGeo, sphereMat);
+    uranusGroup.add(uranusMesh);
+
+    // Тонкие ледяные кольца
+    const ringGeo = new THREE.RingGeometry(1.6, 2.1, 48);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0xb5f2ff,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.35
+    });
+    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    ringMesh.rotation.x = Math.PI / 2;
+    uranusGroup.add(ringMesh);
+
+    // Освещение
+    const light = new THREE.DirectionalLight(0xffffff, 1.2);
+    light.position.set(4, 2, 4);
+    scene.add(light);
+
+    const ambientLight = new THREE.AmbientLight(0x0a192f, 0.8);
+    scene.add(ambientLight);
+
+    // Управление пальцем и мышью (touch/drag)
+    let isDown = false;
+    let prevX = 0, prevY = 0;
+
+    function onPointerDown(x, y) {
+      isDown = true;
+      prevX = x;
+      prevY = y;
+    }
+
+    function onPointerMove(x, y) {
+      if (!isDown) return;
+      const dx = x - prevX;
+      const dy = y - prevY;
+      uranusGroup.rotation.y += dx * 0.007;
+      uranusGroup.rotation.x += dy * 0.007;
+      prevX = x;
+      prevY = y;
+    }
+
+    canvas.addEventListener('mousedown', (e) => onPointerDown(e.clientX, e.clientY));
+    window.addEventListener('mouseup', () => { isDown = false; });
+    window.addEventListener('mousemove', (e) => onPointerMove(e.clientX, e.clientY));
+
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        onPointerDown(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => { isDown = false; });
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1) {
+        onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = wrap.clientWidth / wrap.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    });
+
+    function renderLoop() {
+      requestAnimationFrame(renderLoop);
+      if (!isDown) {
+        uranusMesh.rotation.y += 0.005;
+      }
+      renderer.render(scene, camera);
+    }
+    renderLoop();
+
+    // --- 2. Интерактивный калькулятор веса ---
+    const weightInput = document.getElementById('weightInput');
+    const weightResult = document.getElementById('weightResult');
+
+    weightInput.addEventListener('input', () => {
+      const val = parseFloat(weightInput.value);
+      if (!isNaN(val) && val > 0) {
+        // Сила тяжести на Уране примерно 0.89 от Земли
+        weightResult.textContent = (val * 0.89).toFixed(1);
+      } else {
+        weightResult.textContent = '0';
+      }
+    });
+
+    // --- 3. Активные вкладки меню ---
+    const navLinks = document.querySelectorAll('.nav-btn');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
